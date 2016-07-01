@@ -146,6 +146,18 @@ def generate_win(metric):
     print "For pptp on windows only, run vpnup.bat before dialing to vpn," \
           "and run vpndown.bat after disconnected from the vpn."
 
+def generate_shadowvpn(metric):
+    results = fetch_ip_data()  
+    upfile=open('addchnroutes.txt','w')
+    downfile=open('delchnroutes.txt','w')
+    for ip,mask,_ in results:
+        upfile.write('add %s mask %s default METRIC default IF default\n'%(ip,mask))
+        downfile.write('delete %s mask %s default METRIC default IF default\n'%(ip,mask))
+    
+    upfile.close()
+    downfile.close()
+    print "succ"  
+
 def generate_android(metric):
     results = fetch_ip_data()
     
@@ -229,7 +241,7 @@ if __name__=='__main__':
                         default='openvpn',
                         nargs='?',
                         help="Target platforms, it can be openvpn, mac, linux," 
-                        "win, android. openvpn by default.")
+                        "win, android, shadowvpn. openvpn by default.")
     parser.add_argument('-m','--metric',
                         dest='metric',
                         default=5,
@@ -249,6 +261,8 @@ if __name__=='__main__':
         generate_win(args.metric)
     elif args.platform.lower() == 'android':
         generate_android(args.metric)
+    elif args.platform.lower() == 'shadowvpn':
+        generate_shadowvpn(args.metric)
     else:
         print>>sys.stderr, "Platform %s is not supported."%args.platform
         exit(1)
